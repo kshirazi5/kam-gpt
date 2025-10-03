@@ -493,7 +493,7 @@ def render_sidebar() -> None:
 
         if st.button("Reset conversation"):
             st.session_state.pop("messages", None)
-            st.experimental_rerun()
+            st.rerun()
 
         st.subheader("Documents")
         _render_document_controls(
