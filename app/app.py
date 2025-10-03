@@ -108,9 +108,8 @@ def _experience_response(_: str) -> str:
 
 def _focus_response(_: str) -> str:
     return (
-        "His recent focus areas include building Tableau and QuickSight dashboards, "
-        "optimizing Snowflake and Redshift SQL pipelines, and automating monitoring for "
-        "mission-critical KPIs."
+        "His recent focus areas include business intelligence, SQL and Python automation, "
+        "and scaling Snowflake and Redshift pipelines that keep stakeholders informed."
     )
 
 
@@ -157,8 +156,8 @@ def _linkedin_response(_: str) -> str:
 
 def _projects_response(_: str) -> str:
     return (
-        "He enjoys building analytics products — from executive dashboards and automated "
-        "reporting pipelines to alerting workflows that keep operations teams in the loop."
+        "He enjoys building data products that surface actionable insights — think fleet "
+        "operations dashboards, compliance scorecards, and marketing performance analyses."
     )
 
 
@@ -187,9 +186,9 @@ def _collaboration_response(_: str) -> str:
 
 def _availability_response(_: str) -> str:
     return (
-        "Kamran is open to remote-friendly analytics roles and fractional advisory "
-        "engagements. He typically responds within a business day and can accommodate "
-        "stakeholders across U.S. time zones."
+        "Kamran is open to remote-friendly analytics roles, contract projects, and "
+        "fractional engagements. He typically responds within a business day across U.S. "
+        "time zones."
     )
 
 
@@ -235,7 +234,7 @@ KNOWLEDGE_BASE: List[KnowledgeEntry] = [
         _focus_response,
     ),
     KnowledgeEntry(("machine", "learning"), _focus_response, match_type="all"),
-    KnowledgeEntry(("toronto", "canada", "where", "based", "location"), _location_response),
+    KnowledgeEntry(("san", "diego", "california", "where", "based", "location"), _location_response),
     KnowledgeEntry(("timeline", "history", "journey", "career"), _timeline_response),
     KnowledgeEntry(("contact", "email", "reach", "connect"), _contact_response),
     KnowledgeEntry(("project", "projects", "work", "built", "building"), _projects_response),
@@ -398,8 +397,8 @@ def render_sidebar() -> None:
         st.header("Meet Kamran 👋")
         st.markdown(
             """
-            **Role:** Data analyst & applied data science grad student \\
-            **Specialities:** Analytics ops, dashboards, SQL automation \\
+            **Role:** Data analyst & applied data science graduate student \\
+            **Specialities:** Business intelligence, SQL/Python automation, cloud data warehousing \\
             **Based in:** San Diego, California
             """
         )
