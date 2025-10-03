@@ -1,6 +1,10 @@
-"""Streamlit entry point for the Kam-GPT portfolio app."""
+"""Streamlit entry point for the Kam-GPT conversational portfolio."""
 
-from datetime import datetime
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Callable, Iterable, List
+
 import streamlit as st
 
 
@@ -10,61 +14,155 @@ st.set_page_config(
     layout="wide",
     menu_items={
         "Report a bug": "mailto:kamran@example.com",
-        "About": "Kam-GPT is an AI-powered portfolio for Kamran Shirazi.",
+        "About": "Kam-GPT is an AI guide to Kamran Shirazi's experience.",
     },
 )
 
 
-def render_header() -> None:
-    """Render the hero section of the landing page."""
-    st.title("Kam-GPT")
-    st.subheader("An AI-powered portfolio for Kamran Shirazi")
-    st.write(
-        "This interactive profile showcases Kamran's experience, "
-        "engineering projects, and AI capabilities."
+@dataclass
+class KnowledgeEntry:
+    """Represents a lightweight knowledge record for rule-based responses."""
+
+    keywords: Iterable[str]
+    response_builder: Callable[[str], str]
+
+
+def _default_response(_: str) -> str:
+    return (
+        "I'm Kam-GPT, Kamran Shirazi's AI guide. Ask me about his experience, "
+        "skills, favourite projects, or how to get in touch and I'll share what I know."
     )
 
 
-def render_highlights() -> None:
-    """Render key professional highlights."""
-    st.header("Highlights")
-    cols = st.columns(3)
-    highlights = [
-        ("Experience", "6+ years building scalable data platforms."),
-        ("Focus", "Machine learning, MLOps, and product engineering."),
-        ("Location", "Remote-friendly, based in Toronto, Canada."),
-    ]
-    for col, (title, description) in zip(cols, highlights):
-        with col:
-            st.metric(label=title, value=description)
+def _experience_response(_: str) -> str:
+    return (
+        "Kamran has over six years of experience designing scalable data and ML platforms. "
+        "He has led initiatives that productionize machine learning models and build MLOps "
+        "foundations for cross-functional teams."
+    )
 
 
-def render_timeline() -> None:
-    """Render a simple career timeline."""
-    st.header("Career Timeline")
+def _focus_response(_: str) -> str:
+    return (
+        "His recent focus areas include applied machine learning, MLOps automation, and "
+        "shipping AI features end-to-end with product engineering partners."
+    )
+
+
+def _location_response(_: str) -> str:
+    return (
+        "Kamran works remotely from Toronto, Canada, and collaborates easily across time zones."
+    )
+
+
+def _timeline_response(_: str) -> str:
     timeline = [
-        ("2024", "Leading AI platform initiatives at ACME Co."),
-        ("2022", "Launched data-driven growth experiments at Startup XYZ."),
-        ("2019", "Scaled analytics stack for fintech clients."),
-        ("2016", "Graduated with B.Sc. in Computer Science."),
+        "2024 – Leads AI platform initiatives that unlock faster experimentation.",
+        "2022 – Drove data-informed growth experiments at a high-growth startup.",
+        "2019 – Scaled analytics tooling for fintech clients across North America.",
+        "2016 – Graduated with a B.Sc. in Computer Science and entered data engineering.",
     ]
-    for year, event in timeline:
-        st.markdown(f"**{year}** – {event}")
+    return "\n".join(f"• {item}" for item in timeline)
 
 
-def render_footer() -> None:
-    """Render footer information."""
-    st.divider()
-    current_year = datetime.now().year
-    st.caption(f"© {current_year} Kamran Shirazi • Built with Streamlit")
+def _contact_response(_: str) -> str:
+    return (
+        "You can reach Kamran at kamran@example.com or connect with him on LinkedIn to talk "
+        "about collaboration opportunities."
+    )
+
+
+def _projects_response(_: str) -> str:
+    return (
+        "He enjoys building intelligent data products – think ML-powered user onboarding, "
+        "recommendation systems, and analytics pipelines that keep stakeholders in the loop."
+    )
+
+
+KNOWLEDGE_BASE: List[KnowledgeEntry] = [
+    KnowledgeEntry(("experience",), _experience_response),
+    KnowledgeEntry(("focus", "mlops"), _focus_response),
+    KnowledgeEntry(("machine", "learning"), _focus_response),
+    KnowledgeEntry(("toronto",), _location_response),
+    KnowledgeEntry(("location",), _location_response),
+    KnowledgeEntry(("timeline",), _timeline_response),
+    KnowledgeEntry(("career", "history"), _timeline_response),
+    KnowledgeEntry(("contact",), _contact_response),
+    KnowledgeEntry(("email",), _contact_response),
+    KnowledgeEntry(("project",), _projects_response),
+]
+
+
+def generate_response(prompt: str) -> str:
+    """Return a rule-based response that emulates a friendly chat assistant."""
+
+    cleaned = prompt.lower().strip()
+    for entry in KNOWLEDGE_BASE:
+        if all(keyword in cleaned for keyword in entry.keywords):
+            return entry.response_builder(prompt)
+    return _default_response(prompt)
+
+
+def render_sidebar() -> None:
+    """Render supporting information and controls in the sidebar."""
+
+    with st.sidebar:
+        st.header("Meet Kamran 👋")
+        st.markdown(
+            """
+            **Role:** Senior machine learning engineer \\
+            **Specialities:** Data platforms, MLOps, applied AI \\
+            **Based in:** Toronto, Canada
+            """
+        )
+        st.caption("Curious what Kamran has worked on? Ask away in the chat!")
+
+        if st.button("Reset conversation"):
+            st.session_state.pop("messages", None)
+            st.experimental_rerun()
+
+
+def render_chat_interface() -> None:
+    """Render the conversational UI backed by the lightweight knowledge base."""
+
+    st.title("Kam-GPT")
+    st.subheader("Your AI guide to Kamran Shirazi")
+    st.write(
+        "Use the chat below to learn about Kamran's experience, favourite projects, and how "
+        "he collaborates on AI initiatives."
+    )
+
+    if "messages" not in st.session_state:
+        st.session_state.messages = [
+            {
+                "role": "assistant",
+                "content": (
+                    "Hi there! I'm Kam-GPT. Ask me anything about Kamran Shirazi's background, "
+                    "skills, or availability."
+                ),
+            }
+        ]
+
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt := st.chat_input("Ask about Kamran's expertise"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        response = generate_response(prompt)
+        with st.chat_message("assistant"):
+            st.markdown(response)
+        st.session_state.messages.append({"role": "assistant", "content": response})
 
 
 def main() -> None:
     """Application entry point."""
-    render_header()
-    render_highlights()
-    render_timeline()
-    render_footer()
+
+    render_sidebar()
+    render_chat_interface()
 
 
 if __name__ == "__main__":
