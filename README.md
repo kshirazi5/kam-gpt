@@ -11,6 +11,7 @@ The Streamlit application exposes a chat interface so visitors can ask Kam-GPT a
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+export OPENAI_API_KEY="sk-..."  # Optional, enables GPT-4.1 responses
 streamlit run app/app.py
 ```
 
@@ -25,5 +26,8 @@ streamlit run app/app.py
 
 ## Development Notes
 
-- The chat experience is backed by a small rule-based knowledge base in `app/app.py`.
-- Update the knowledge entries in `app/app.py` to reflect the latest achievements or contact details.
+- Provide an `OPENAI_API_KEY` environment variable to let Kam-GPT answer with OpenAI's
+  GPT-4.1 model. Without the key the app falls back to the built-in rule-based
+  knowledge base in `app/app.py`.
+- Update the knowledge entries in `app/app.py` to reflect the latest achievements or
+  contact details when relying on the built-in experience.
