@@ -1,10 +1,10 @@
 # Kam-GPT
 
-An AI-powered portfolio that represents **Kamran Shirazi** for recruiters and engineers.
+A conversational, AI-powered portfolio that represents **Kamran Shirazi** for recruiters and engineers.
 
 ## Preview
 
-The Streamlit application surfaces Kamran's experience highlights, timeline, and contact information so visitors can quickly understand his background.
+The Streamlit application exposes a chat interface so visitors can ask Kam-GPT about Kamran's experience, focus areas, and how to get in touch.
 
 ## Quick Start
 
@@ -18,12 +18,12 @@ streamlit run app/app.py
 
 ```
 ├── app
-│   └── app.py        # Streamlit entry point
+│   └── app.py        # Streamlit chat experience
 ├── requirements.txt  # Python dependencies
 └── README.md
 ```
 
 ## Development Notes
 
-- The app is intentionally lightweight and can be extended with additional Streamlit pages.
-- Update the placeholder experience data in `app/app.py` to reflect the latest achievements.
+- The chat experience is backed by a small rule-based knowledge base in `app/app.py`.
+- Update the knowledge entries in `app/app.py` to reflect the latest achievements or contact details.
