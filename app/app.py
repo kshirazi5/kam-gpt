@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Callable, Iterable, List
 
@@ -25,9 +26,29 @@ class KnowledgeEntry:
 
     keywords: Iterable[str]
     response_builder: Callable[[str], str]
+    match_type: str = "any"
+
+    def matches(self, normalized_text: str, tokens: set[str]) -> bool:
+        """Return ``True`` when the entry should handle the prompt."""
+
+        def _keyword_in(keyword: str) -> bool:
+            if " " in keyword:
+                return keyword in normalized_text
+            return keyword in tokens
+
+        if self.match_type == "all":
+            return all(_keyword_in(keyword) for keyword in self.keywords)
+        return any(_keyword_in(keyword) for keyword in self.keywords)
 
 
-def _default_response(_: str) -> str:
+def _default_response(prompt: str) -> str:
+    cleaned_prompt = prompt.strip()
+    if cleaned_prompt:
+        return (
+            "I'm Kam-GPT, Kamran Shirazi's AI guide. I might not have details on "
+            f"“{cleaned_prompt}” yet. Try asking about his experience, skills, "
+            "favourite projects, or how to get in touch."
+        )
     return (
         "I'm Kam-GPT, Kamran Shirazi's AI guide. Ask me about his experience, "
         "skills, favourite projects, or how to get in touch and I'll share what I know."
@@ -80,25 +101,42 @@ def _projects_response(_: str) -> str:
 
 
 KNOWLEDGE_BASE: List[KnowledgeEntry] = [
-    KnowledgeEntry(("experience",), _experience_response),
-    KnowledgeEntry(("focus", "mlops"), _focus_response),
-    KnowledgeEntry(("machine", "learning"), _focus_response),
-    KnowledgeEntry(("toronto",), _location_response),
-    KnowledgeEntry(("location",), _location_response),
-    KnowledgeEntry(("timeline",), _timeline_response),
-    KnowledgeEntry(("career", "history"), _timeline_response),
-    KnowledgeEntry(("contact",), _contact_response),
-    KnowledgeEntry(("email",), _contact_response),
-    KnowledgeEntry(("project",), _projects_response),
+    KnowledgeEntry(
+        ("experience", "background", "expertise", "profile", "yourself"),
+        _experience_response,
+    ),
+    KnowledgeEntry(
+        (
+            "focus",
+            "specialty",
+            "speciality",
+            "specialities",
+            "specialties",
+            "interests",
+            "mlops",
+        ),
+        _focus_response,
+    ),
+    KnowledgeEntry(("machine", "learning"), _focus_response, match_type="all"),
+    KnowledgeEntry(("toronto", "canada", "where", "based", "location"), _location_response),
+    KnowledgeEntry(("timeline", "history", "journey", "career"), _timeline_response),
+    KnowledgeEntry(("contact", "email", "reach", "connect", "linkedin"), _contact_response),
+    KnowledgeEntry(("project", "projects", "work", "built", "building"), _projects_response),
 ]
+
+
+def _normalize_prompt(prompt: str) -> tuple[str, set[str]]:
+    normalized_text = re.sub(r"[^a-z0-9\s]", " ", prompt.lower()).strip()
+    tokens = {token for token in normalized_text.split() if token}
+    return normalized_text, tokens
 
 
 def generate_response(prompt: str) -> str:
     """Return a rule-based response that emulates a friendly chat assistant."""
 
-    cleaned = prompt.lower().strip()
+    normalized_text, tokens = _normalize_prompt(prompt)
     for entry in KNOWLEDGE_BASE:
-        if all(keyword in cleaned for keyword in entry.keywords):
+        if entry.matches(normalized_text, tokens):
             return entry.response_builder(prompt)
     return _default_response(prompt)
 
