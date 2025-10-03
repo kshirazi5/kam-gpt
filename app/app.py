@@ -7,6 +7,7 @@ import os
 import re
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 from typing import Callable, Iterable, List
 
 from openai import OpenAI
@@ -17,18 +18,23 @@ LOGGER = logging.getLogger(__name__)
 
 LLM_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
 LLM_SYSTEM_PROMPT = """
-You are Kam-GPT, an AI guide to software and machine learning engineer Kamran Shirazi.
-Use the conversation so far and the portfolio facts below to answer with concise,
-friendly guidance that highlights Kamran's experience, values, and availability.
+You are Kam-GPT, an AI guide to data analyst and applied data science graduate student
+Kamran Shirazi. Use the conversation so far and the portfolio facts below to answer with
+concise, friendly guidance that highlights Kamran's experience, values, and
+availability.
 
 Portfolio facts:
-- Kamran has over six years of experience designing scalable data and ML platforms and
-  leading initiatives that productionize ML models for cross-functional teams.
-- His recent focus areas include applied machine learning, MLOps automation, and shipping
-  AI features end-to-end with product engineering partners.
-- Kamran works remotely from Toronto, Canada, and collaborates across time zones.
+- Kamran has 3+ years of experience turning messy datasets into decision-ready insights
+  across telematics, healthcare, e-commerce, and automotive programs.
+- He currently leads analytics initiatives for Lytx telematics operations from San Diego,
+  building dashboards, optimizing SQL pipelines, and automating monitoring for KPIs.
+- Previous roles include analytics work at Integra LifeSciences, Cox Automotive, and
+  Amazon where he improved reporting cadences, surfaced revenue opportunities, and led
+  operations teams.
+- Kamran is based in San Diego, California, and collaborates seamlessly with remote
+  stakeholders across the U.S.
 - He values transparent collaboration, psychological safety, and data-informed decision
-  making, and he enjoys building intelligent data products that deliver measurable impact.
+  making, and enjoys storytelling that empowers cross-functional partners.
 - You can reach Kamran at kamran@example.com or connect via LinkedIn for collaboration
   opportunities.
 """.strip()
@@ -52,6 +58,9 @@ st.set_page_config(
         "About": "Kam-GPT is an AI guide to Kamran Shirazi's experience.",
     },
 )
+
+
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
 @dataclass
@@ -91,31 +100,36 @@ def _default_response(prompt: str) -> str:
 
 def _experience_response(_: str) -> str:
     return (
-        "Kamran has over six years of experience designing scalable data and ML platforms. "
-        "He has led initiatives that productionize machine learning models and build MLOps "
-        "foundations for cross-functional teams."
+        "Kamran is a San Diego–based data analyst with 3+ years of experience translating "
+        "messy datasets into decision-ready insights for telematics, healthcare, "
+        "e-commerce, and automotive teams."
     )
 
 
 def _focus_response(_: str) -> str:
     return (
-        "His recent focus areas include applied machine learning, MLOps automation, and "
-        "shipping AI features end-to-end with product engineering partners."
+        "His recent focus areas include building Tableau and QuickSight dashboards, "
+        "optimizing Snowflake and Redshift SQL pipelines, and automating monitoring for "
+        "mission-critical KPIs."
     )
 
 
 def _location_response(_: str) -> str:
     return (
-        "Kamran works remotely from Toronto, Canada, and collaborates easily across time zones."
+        "Kamran is based in San Diego, California, and partners with remote stakeholders "
+        "across the United States."
     )
 
 
 def _timeline_response(_: str) -> str:
     timeline = [
-        "2024 – Leads AI platform initiatives that unlock faster experimentation.",
-        "2022 – Drove data-informed growth experiments at a high-growth startup.",
-        "2019 – Scaled analytics tooling for fintech clients across North America.",
-        "2016 – Graduated with a B.Sc. in Computer Science and entered data engineering.",
+        "2024 – Leads Lytx telematics analytics to deliver executive-ready dashboards and "
+        "faster KPI monitoring.",
+        "2023 – Streamlined compliance and revenue reporting at Integra LifeSciences with "
+        "Power BI and SQL automation.",
+        "2022 – Surfaced $1.5M in incremental marketing ROI as a content performance "
+        "analyst at Cox Automotive.",
+        "2021 – Drove operations analytics and people leadership as an Amazon Area Manager.",
     ]
     return "\n".join(f"• {item}" for item in timeline)
 
@@ -127,10 +141,24 @@ def _contact_response(_: str) -> str:
     )
 
 
+def _resume_response(_: str) -> str:
+    return (
+        "You can download Kamran's latest resume from the sidebar, which also includes a "
+        "preview of the key highlights."
+    )
+
+
+def _linkedin_response(_: str) -> str:
+    return (
+        "There's a LinkedIn profile export available in the sidebar if you'd like to review "
+        "Kamran's roles and accomplishments in more detail."
+    )
+
+
 def _projects_response(_: str) -> str:
     return (
-        "He enjoys building intelligent data products – think ML-powered user onboarding, "
-        "recommendation systems, and analytics pipelines that keep stakeholders in the loop."
+        "He enjoys building analytics products — from executive dashboards and automated "
+        "reporting pipelines to alerting workflows that keep operations teams in the loop."
     )
 
 
@@ -143,25 +171,25 @@ def _acknowledgement_response(_: str) -> str:
 
 def _skills_response(_: str) -> str:
     return (
-        "Kamran works across Python, SQL, and modern data tooling like dbt, Airflow, and "
-        "Spark. On the ML side he builds with PyTorch, scikit-learn, and MLflow, and he is "
-        "comfortable productionizing models with containerized services."
+        "Kamran works across SQL, Python, and modern data tooling like dbt, Airflow, and "
+        "Snowflake. He pairs visualization platforms such as Tableau, Power BI, QuickSight, "
+        "and Looker Studio with reproducible analytics workflows."
     )
 
 
 def _collaboration_response(_: str) -> str:
     return (
-        "He believes in transparent collaboration — partnering closely with product, "
-        "design, and go-to-market teams to ensure ML features deliver measurable value. "
+        "He believes in transparent collaboration — partnering closely with operations, "
+        "product, and business leaders to ensure analytics work drives measurable impact. "
         "Expect frequent demos, async updates, and thoughtful documentation."
     )
 
 
 def _availability_response(_: str) -> str:
     return (
-        "Kamran is open to remote-friendly roles and fractional advisory engagements. "
-        "He typically responds within a business day and can accommodate North American "
-        "and European collaboration windows."
+        "Kamran is open to remote-friendly analytics roles and fractional advisory "
+        "engagements. He typically responds within a business day and can accommodate "
+        "stakeholders across U.S. time zones."
     )
 
 
@@ -175,22 +203,23 @@ def _values_response(_: str) -> str:
 
 def _education_response(_: str) -> str:
     return (
-        "Kamran earned a B.Sc. in Computer Science and continues to learn through "
-        "industry conferences, leading ML meetups, and mentoring early-career engineers."
+        "Kamran is pursuing an M.S. in Applied Data Science at the University of San Diego, "
+        "completed the UC Berkeley Data Analytics Bootcamp, and advanced his undergraduate "
+        "studies during the COVID era."
     )
 
 
 def _impact_response(_: str) -> str:
     return (
-        "Highlights include shipping an onboarding recommendations engine that lifted "
-        "conversion by double digits and building an ML experimentation platform that "
-        "shortened deployment cycles from weeks to days."
+        "Highlights include trimming KPI latency by ~40% at Lytx, surfacing $1.5M in "
+        "incremental marketing ROI at Cox Automotive, and driving 20% defect reduction as "
+        "an Amazon operations leader."
     )
 
 
 KNOWLEDGE_BASE: List[KnowledgeEntry] = [
     KnowledgeEntry(
-        ("experience", "background", "expertise", "profile", "yourself", "resume", "cv"),
+        ("experience", "background", "expertise", "profile", "yourself"),
         _experience_response,
     ),
     KnowledgeEntry(
@@ -207,8 +236,8 @@ KNOWLEDGE_BASE: List[KnowledgeEntry] = [
     ),
     KnowledgeEntry(("machine", "learning"), _focus_response, match_type="all"),
     KnowledgeEntry(("toronto", "canada", "where", "based", "location"), _location_response),
-    KnowledgeEntry(("timeline", "history", "journey", "career", "resume"), _timeline_response),
-    KnowledgeEntry(("contact", "email", "reach", "connect", "linkedin"), _contact_response),
+    KnowledgeEntry(("timeline", "history", "journey", "career"), _timeline_response),
+    KnowledgeEntry(("contact", "email", "reach", "connect"), _contact_response),
     KnowledgeEntry(("project", "projects", "work", "built", "building"), _projects_response),
     KnowledgeEntry(
         (
@@ -229,6 +258,8 @@ KNOWLEDGE_BASE: List[KnowledgeEntry] = [
     KnowledgeEntry(("values", "culture", "principles", "approach"), _values_response),
     KnowledgeEntry(("education", "degree", "school", "university", "study", "learning"), _education_response),
     KnowledgeEntry(("impact", "results", "outcome", "wins", "success", "achievement"), _impact_response),
+    KnowledgeEntry(("resume", "cv"), _resume_response),
+    KnowledgeEntry(("linkedin", "profile"), _linkedin_response),
 ]
 
 
@@ -317,6 +348,49 @@ def generate_response(prompt: str, history: list[dict[str, str]]) -> str:
     return _generate_llm_response(prompt, history)
 
 
+@lru_cache(maxsize=None)
+def _load_document(filename: str) -> str:
+    """Return the raw text for a document located in the data directory."""
+
+    path = DATA_DIR / filename
+    try:
+        return path.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        LOGGER.warning("Document %s could not be found", filename)
+    except OSError:
+        LOGGER.exception("Unable to read document %s", filename)
+    return ""
+
+
+def _strip_front_matter(content: str) -> str:
+    """Remove YAML front matter from markdown documents for preview rendering."""
+
+    if content.startswith("---"):
+        end_marker = content.find("\n---", 3)
+        if end_marker != -1:
+            return content[end_marker + 4 :].lstrip("\n")
+    return content
+
+
+def _render_document_controls(filename: str, label: str, description: str) -> None:
+    """Render download and preview controls for a markdown document."""
+
+    content = _load_document(filename)
+    if not content:
+        st.caption(f"{label} is currently unavailable.")
+        return
+
+    st.markdown(f"**{label}:** {description}")
+    st.download_button(
+        label=f"Download {label.lower()} (Markdown)",
+        data=content,
+        file_name=f"kamran-shirazi-{filename}",
+        mime="text/markdown",
+    )
+    with st.expander(f"Preview {label.lower()}"):
+        st.markdown(_strip_front_matter(content))
+
+
 def render_sidebar() -> None:
     """Render supporting information and controls in the sidebar."""
 
@@ -324,9 +398,9 @@ def render_sidebar() -> None:
         st.header("Meet Kamran 👋")
         st.markdown(
             """
-            **Role:** Senior machine learning engineer \\
-            **Specialities:** Data platforms, MLOps, applied AI \\
-            **Based in:** Toronto, Canada
+            **Role:** Data analyst & applied data science grad student \\
+            **Specialities:** Analytics ops, dashboards, SQL automation \\
+            **Based in:** San Diego, California
             """
         )
         st.caption("Curious what Kamran has worked on? Ask away in the chat!")
@@ -334,6 +408,18 @@ def render_sidebar() -> None:
         if st.button("Reset conversation"):
             st.session_state.pop("messages", None)
             st.experimental_rerun()
+
+        st.subheader("Documents")
+        _render_document_controls(
+            "resume.md",
+            "Resume",
+            "Download the latest copy or skim the highlights.",
+        )
+        _render_document_controls(
+            "linkedin.md",
+            "LinkedIn export",
+            "Review Kamran's recent roles, education, and skills.",
+        )
 
 
 def render_chat_interface() -> None:
