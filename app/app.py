@@ -18,18 +18,20 @@ LOGGER = logging.getLogger(__name__)
 
 LLM_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
 LLM_SYSTEM_PROMPT = """
-You are Kam-GPT, an AI guide to software and machine learning engineer Kamran Shirazi.
+You are Kam-GPT, an AI guide to data analyst Kamran Shirazi.
 Use the conversation so far and the portfolio facts below to answer with concise,
-friendly guidance that highlights Kamran's experience, values, and availability.
+friendly guidance that highlights Kamran's analytics experience, values, and availability.
 
 Portfolio facts:
-- Kamran has over six years of experience designing scalable data and ML platforms and
-  leading initiatives that productionize ML models for cross-functional teams.
-- His recent focus areas include applied machine learning, MLOps automation, and shipping
-  AI features end-to-end with product engineering partners.
-- Kamran works remotely from Toronto, Canada, and collaborates across time zones.
+- Kamran has over three years of experience partnering with operations, marketing, and
+  product teams to transform messy datasets into decision-ready insights.
+- His recent focus areas include dashboard development in Tableau, QuickSight, and Power BI,
+  SQL pipeline optimization in Snowflake and Redshift, and standing up automated monitoring
+  that keeps stakeholders current.
+- Kamran is based in San Diego, California, and collaborates seamlessly with remote teams
+  across North American time zones.
 - He values transparent collaboration, psychological safety, and data-informed decision
-  making, and he enjoys building intelligent data products that deliver measurable impact.
+  making, and he enjoys storytelling with data to unlock measurable outcomes.
 - You can reach Kamran at kamran@example.com or connect via LinkedIn for collaboration
   opportunities.
 """.strip()
@@ -84,42 +86,42 @@ def _default_response(prompt: str) -> str:
     if cleaned_prompt:
         return (
             "I'm Kam-GPT, Kamran Shirazi's AI guide. I might not have a tailored answer "
-            f"for “{cleaned_prompt}” yet, but you can ask about his experience, skills, "
-            "favourite projects, collaboration style, values, or how to connect with him."
+            f"for “{cleaned_prompt}” yet, but you can ask about his analytics experience, "
+            "skills, favourite projects, collaboration style, values, or how to connect with him."
         )
     return (
-        "I'm Kam-GPT, Kamran Shirazi's AI guide. Ask me about his experience, skills, "
-        "tech stack, favourite projects, collaboration style, values, or how to connect."
+        "I'm Kam-GPT, Kamran Shirazi's AI guide. Ask me about his analytics experience, "
+        "skills, tech stack, favourite projects, collaboration style, values, or how to connect."
     )
 
 
 def _experience_response(_: str) -> str:
     return (
-        "Kamran has over six years of experience designing scalable data and ML platforms. "
-        "He has led initiatives that productionize machine learning models and build MLOps "
-        "foundations for cross-functional teams."
+        "Kamran has 3+ years of experience translating complex datasets into decision-ready "
+        "insights for operations, marketing, and product stakeholders. He partners closely "
+        "with teams to automate reporting, surface trends, and drive measurable improvements."
     )
 
 
 def _focus_response(_: str) -> str:
     return (
-        "His recent focus areas include applied machine learning, MLOps automation, and "
-        "shipping AI features end-to-end with product engineering partners."
+        "His recent focus areas include building Tableau and QuickSight dashboards, "
+        "optimizing Snowflake and Redshift SQL pipelines, and automating monitoring so "
+        "teams always have fresh KPIs. He brings Python-based analytics and forecasting "
+        "when deeper modeling is needed."
     )
 
 
 def _location_response(_: str) -> str:
-    return (
-        "Kamran works remotely from Toronto, Canada, and collaborates easily across time zones."
-    )
+    return "Kamran is based in San Diego, California, and partners with remote teams across the US."
 
 
 def _timeline_response(_: str) -> str:
     timeline = [
-        "2024 – Leads AI platform initiatives that unlock faster experimentation.",
-        "2022 – Drove data-informed growth experiments at a high-growth startup.",
-        "2019 – Scaled analytics tooling for fintech clients across North America.",
-        "2016 – Graduated with a B.Sc. in Computer Science and entered data engineering.",
+        "2024 – Leads telematics analytics at Lytx, shipping dashboards and automated monitoring.",
+        "2023 – Delivered compliance and sales reporting for Integra LifeSciences as a remote data analyst.",
+        "2022 – Modeled marketing performance at Cox Automotive to uncover $1.5M in incremental ROI.",
+        "2021 – Managed Amazon fulfillment operations, pairing analytics with on-the-floor leadership.",
     ]
     return "\n".join(f"• {item}" for item in timeline)
 
@@ -147,8 +149,8 @@ def _linkedin_response(_: str) -> str:
 
 def _projects_response(_: str) -> str:
     return (
-        "He enjoys building intelligent data products – think ML-powered user onboarding, "
-        "recommendation systems, and analytics pipelines that keep stakeholders in the loop."
+        "He enjoys building analytics products such as executive dashboards, automated KPI "
+        "monitors, and SQL-based alerting that keep stakeholders aligned and proactive."
     )
 
 
@@ -161,25 +163,25 @@ def _acknowledgement_response(_: str) -> str:
 
 def _skills_response(_: str) -> str:
     return (
-        "Kamran works across Python, SQL, and modern data tooling like dbt, Airflow, and "
-        "Spark. On the ML side he builds with PyTorch, scikit-learn, and MLflow, and he is "
-        "comfortable productionizing models with containerized services."
+        "Kamran works across SQL, Python, and analytics tooling like Tableau, Power BI, "
+        "QuickSight, dbt, Snowflake, and Redshift. He pairs strong data storytelling with "
+        "reliable pipeline operations."
     )
 
 
 def _collaboration_response(_: str) -> str:
     return (
-        "He believes in transparent collaboration — partnering closely with product, "
-        "design, and go-to-market teams to ensure ML features deliver measurable value. "
-        "Expect frequent demos, async updates, and thoughtful documentation."
+        "He believes in transparent collaboration — running regular syncs, async updates, "
+        "and clear documentation so business, operations, and engineering teams stay aligned "
+        "on analytics outcomes."
     )
 
 
 def _availability_response(_: str) -> str:
     return (
-        "Kamran is open to remote-friendly roles and fractional advisory engagements. "
-        "He typically responds within a business day and can accommodate North American "
-        "and European collaboration windows."
+        "Kamran is open to remote-friendly data analyst roles and fractional analytics "
+        "engagements. He typically responds within a business day and supports North American "
+        "time zones."
     )
 
 
@@ -193,16 +195,17 @@ def _values_response(_: str) -> str:
 
 def _education_response(_: str) -> str:
     return (
-        "Kamran earned a B.Sc. in Computer Science and continues to learn through "
-        "industry conferences, leading ML meetups, and mentoring early-career engineers."
+        "Kamran is pursuing an M.S. in Applied Data Science at the University of San Diego, "
+        "completed the UC Berkeley Extension Data Analytics Bootcamp, and continues to grow "
+        "through hands-on analytics projects."
     )
 
 
 def _impact_response(_: str) -> str:
     return (
-        "Highlights include shipping an onboarding recommendations engine that lifted "
-        "conversion by double digits and building an ML experimentation platform that "
-        "shortened deployment cycles from weeks to days."
+        "Highlights include surfacing $1.5M in incremental marketing ROI, trimming KPI "
+        "latency by ~40% with automated monitoring, and launching analytics initiatives "
+        "that improved operational safety metrics."
     )
 
 
@@ -219,12 +222,14 @@ KNOWLEDGE_BASE: List[KnowledgeEntry] = [
             "specialities",
             "specialties",
             "interests",
-            "mlops",
+            "analytics",
+            "bi",
+            "dashboard",
         ),
         _focus_response,
     ),
-    KnowledgeEntry(("machine", "learning"), _focus_response, match_type="all"),
-    KnowledgeEntry(("toronto", "canada", "where", "based", "location"), _location_response),
+    KnowledgeEntry(("business", "intelligence"), _focus_response, match_type="all"),
+    KnowledgeEntry(("san", "diego", "california", "where", "based", "location"), _location_response),
     KnowledgeEntry(("timeline", "history", "journey", "career"), _timeline_response),
     KnowledgeEntry(("contact", "email", "reach", "connect"), _contact_response),
     KnowledgeEntry(("project", "projects", "work", "built", "building"), _projects_response),
@@ -387,9 +392,9 @@ def render_sidebar() -> None:
         st.header("Meet Kamran 👋")
         st.markdown(
             """
-            **Role:** Senior machine learning engineer \\
-            **Specialities:** Data platforms, MLOps, applied AI \\
-            **Based in:** Toronto, Canada
+            **Role:** Data analyst \\
+            **Specialities:** Tableau, SQL, automated monitoring \\
+            **Based in:** San Diego, CA
             """
         )
         st.caption("Curious what Kamran has worked on? Ask away in the chat!")
