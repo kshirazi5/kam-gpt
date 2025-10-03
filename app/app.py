@@ -79,7 +79,41 @@ st.set_page_config(
 )
 
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+@lru_cache(maxsize=1)
+def _resolve_data_dir() -> Path:
+    """Return the directory that stores markdown knowledge documents.
+
+    Streamlit deployments sometimes execute the application from a different
+    working directory than local development (for example ``/app`` on the
+    Streamlit Community Cloud). When ``Path(__file__).resolve()`` is anchored to
+    such an environment the naive ``parent.parent / "data"`` calculation can
+    accidentally point to ``/data`` at the filesystem root, leaving the app
+    unable to locate the repository's markdown files.  To make the lookup more
+    robust we walk up the directory tree until we find a ``data`` folder.
+
+    Returns:
+        Path: The best-effort location of the ``data`` directory.
+    """
+
+    override = os.getenv("KAMGPT_DATA_DIR")
+    if override:
+        candidate = Path(override).expanduser()
+        if candidate.is_dir():
+            return candidate
+        LOGGER.warning("KAMGPT_DATA_DIR=%s does not exist", override)
+
+    current = Path(__file__).resolve().parent
+    for parent in (current, *current.parents):
+        candidate = parent / "data"
+        if candidate.is_dir():
+            return candidate
+
+    fallback = current / "data"
+    LOGGER.warning("Falling back to %s; markdown documents may be missing", fallback)
+    return fallback
+
+
+DATA_DIR = _resolve_data_dir()
 
 
 @dataclass
