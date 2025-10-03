@@ -20,16 +20,21 @@ LLM_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
 LLM_SYSTEM_PROMPT = """
 You are Kam-GPT, an AI guide to data analyst and applied data science graduate student
 Kamran Shirazi. Use the conversation so far and the portfolio facts below to answer with
-concise, friendly guidance that highlights Kamran's experience, values, and availability.
+concise, friendly guidance that highlights Kamran's experience, values, and
+availability.
 
 Portfolio facts:
-- Kamran has a little over three years of professional analytics experience supporting
-  teams across telematics, healthcare, e-commerce, and automotive organizations.
-- His recent focus areas include business intelligence, SQL and Python automation, and
-  scaling cloud data pipelines that make KPIs decision-ready.
-- Kamran is based in San Diego, California, and collaborates remotely across U.S. time zones.
-- He values transparent collaboration, psychological safety, and data-informed storytelling
-  that helps stakeholders act quickly on insights.
+- Kamran has 3+ years of experience turning messy datasets into decision-ready insights
+  across telematics, healthcare, e-commerce, and automotive programs.
+- He currently leads analytics initiatives for Lytx telematics operations from San Diego,
+  building dashboards, optimizing SQL pipelines, and automating monitoring for KPIs.
+- Previous roles include analytics work at Integra LifeSciences, Cox Automotive, and
+  Amazon where he improved reporting cadences, surfaced revenue opportunities, and led
+  operations teams.
+- Kamran is based in San Diego, California, and collaborates seamlessly with remote
+  stakeholders across the U.S.
+- He values transparent collaboration, psychological safety, and data-informed decision
+  making, and enjoys storytelling that empowers cross-functional partners.
 - You can reach Kamran at kamran@example.com or connect via LinkedIn for collaboration
   opportunities.
 """.strip()
@@ -95,8 +100,9 @@ def _default_response(prompt: str) -> str:
 
 def _experience_response(_: str) -> str:
     return (
-        "Kamran brings 3+ years of analytics experience building dashboards, automation, "
-        "and KPI monitoring for telematics, healthcare, automotive, and e-commerce teams."
+        "Kamran is a San Diego–based data analyst with 3+ years of experience translating "
+        "messy datasets into decision-ready insights for telematics, healthcare, "
+        "e-commerce, and automotive teams."
     )
 
 
@@ -109,16 +115,20 @@ def _focus_response(_: str) -> str:
 
 def _location_response(_: str) -> str:
     return (
-        "Kamran is based in San Diego, California, and collaborates remotely across U.S. time zones."
+        "Kamran is based in San Diego, California, and partners with remote stakeholders "
+        "across the United States."
     )
 
 
 def _timeline_response(_: str) -> str:
     timeline = [
-        "2024 – Builds telematics analytics dashboards at Lytx via Eliassen Group.",
-        "2023 – Supported contract compliance analytics at Integra LifeSciences.",
-        "2022 – Drove marketing insights for Cox Automotive's content programs.",
-        "2021 – Led operations and analytics as an Area Manager at Amazon.",
+        "2024 – Leads Lytx telematics analytics to deliver executive-ready dashboards and "
+        "faster KPI monitoring.",
+        "2023 – Streamlined compliance and revenue reporting at Integra LifeSciences with "
+        "Power BI and SQL automation.",
+        "2022 – Surfaced $1.5M in incremental marketing ROI as a content performance "
+        "analyst at Cox Automotive.",
+        "2021 – Drove operations analytics and people leadership as an Amazon Area Manager.",
     ]
     return "\n".join(f"• {item}" for item in timeline)
 
@@ -160,15 +170,16 @@ def _acknowledgement_response(_: str) -> str:
 
 def _skills_response(_: str) -> str:
     return (
-        "Kamran works across SQL, Python, and modern analytics tooling like dbt, Airflow, "
-        "Snowflake, Redshift, Tableau, Power BI, and QuickSight."
+        "Kamran works across SQL, Python, and modern data tooling like dbt, Airflow, and "
+        "Snowflake. He pairs visualization platforms such as Tableau, Power BI, QuickSight, "
+        "and Looker Studio with reproducible analytics workflows."
     )
 
 
 def _collaboration_response(_: str) -> str:
     return (
         "He believes in transparent collaboration — partnering closely with operations, "
-        "product, and go-to-market teams to ensure analytics deliver measurable value. "
+        "product, and business leaders to ensure analytics work drives measurable impact. "
         "Expect frequent demos, async updates, and thoughtful documentation."
     )
 
@@ -192,14 +203,16 @@ def _values_response(_: str) -> str:
 def _education_response(_: str) -> str:
     return (
         "Kamran is pursuing an M.S. in Applied Data Science at the University of San Diego, "
-        "building on analytics coursework from UC Berkeley Extension and prior studies."
+        "completed the UC Berkeley Data Analytics Bootcamp, and advanced his undergraduate "
+        "studies during the COVID era."
     )
 
 
 def _impact_response(_: str) -> str:
     return (
-        "Highlights include surfacing $1.5M in incremental marketing ROI, cutting KPI "
-        "latency by ~40% for telematics operations, and reducing fulfillment defects by 20%."
+        "Highlights include trimming KPI latency by ~40% at Lytx, surfacing $1.5M in "
+        "incremental marketing ROI at Cox Automotive, and driving 20% defect reduction as "
+        "an Amazon operations leader."
     )
 
 
