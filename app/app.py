@@ -45,13 +45,13 @@ def _default_response(prompt: str) -> str:
     cleaned_prompt = prompt.strip()
     if cleaned_prompt:
         return (
-            "I'm Kam-GPT, Kamran Shirazi's AI guide. I might not have details on "
-            f"“{cleaned_prompt}” yet. Try asking about his experience, skills, "
-            "favourite projects, or how to get in touch."
+            "I'm Kam-GPT, Kamran Shirazi's AI guide. I might not have a tailored answer "
+            f"for “{cleaned_prompt}” yet, but you can ask about his experience, skills, "
+            "favourite projects, collaboration style, values, or how to connect with him."
         )
     return (
-        "I'm Kam-GPT, Kamran Shirazi's AI guide. Ask me about his experience, "
-        "skills, favourite projects, or how to get in touch and I'll share what I know."
+        "I'm Kam-GPT, Kamran Shirazi's AI guide. Ask me about his experience, skills, "
+        "tech stack, favourite projects, collaboration style, values, or how to connect."
     )
 
 
@@ -107,6 +107,53 @@ def _acknowledgement_response(_: str) -> str:
     )
 
 
+def _skills_response(_: str) -> str:
+    return (
+        "Kamran works across Python, SQL, and modern data tooling like dbt, Airflow, and "
+        "Spark. On the ML side he builds with PyTorch, scikit-learn, and MLflow, and he is "
+        "comfortable productionizing models with containerized services."
+    )
+
+
+def _collaboration_response(_: str) -> str:
+    return (
+        "He believes in transparent collaboration — partnering closely with product, "
+        "design, and go-to-market teams to ensure ML features deliver measurable value. "
+        "Expect frequent demos, async updates, and thoughtful documentation."
+    )
+
+
+def _availability_response(_: str) -> str:
+    return (
+        "Kamran is open to remote-friendly roles and fractional advisory engagements. "
+        "He typically responds within a business day and can accommodate North American "
+        "and European collaboration windows."
+    )
+
+
+def _values_response(_: str) -> str:
+    return (
+        "He values curiosity, psychological safety, and data-informed decision making. "
+        "Teams that celebrate experimentation and learn from fast feedback loops are the "
+        "ones he thrives in."
+    )
+
+
+def _education_response(_: str) -> str:
+    return (
+        "Kamran earned a B.Sc. in Computer Science and continues to learn through "
+        "industry conferences, leading ML meetups, and mentoring early-career engineers."
+    )
+
+
+def _impact_response(_: str) -> str:
+    return (
+        "Highlights include shipping an onboarding recommendations engine that lifted "
+        "conversion by double digits and building an ML experimentation platform that "
+        "shortened deployment cycles from weeks to days."
+    )
+
+
 KNOWLEDGE_BASE: List[KnowledgeEntry] = [
     KnowledgeEntry(
         ("experience", "background", "expertise", "profile", "yourself", "resume", "cv"),
@@ -142,6 +189,12 @@ KNOWLEDGE_BASE: List[KnowledgeEntry] = [
         ),
         _acknowledgement_response,
     ),
+    KnowledgeEntry(("skill", "skills", "tech", "stack", "tools", "technology"), _skills_response),
+    KnowledgeEntry(("collaborate", "collaboration", "partner", "team", "communication"), _collaboration_response),
+    KnowledgeEntry(("availability", "available", "open", "hire", "hiring", "contract"), _availability_response),
+    KnowledgeEntry(("values", "culture", "principles", "approach"), _values_response),
+    KnowledgeEntry(("education", "degree", "school", "university", "study", "learning"), _education_response),
+    KnowledgeEntry(("impact", "results", "outcome", "wins", "success", "achievement"), _impact_response),
 ]
 
 
@@ -155,9 +208,16 @@ def generate_response(prompt: str) -> str:
     """Return a rule-based response that emulates a friendly chat assistant."""
 
     normalized_text, tokens = _normalize_prompt(prompt)
+    matched_responses: list[str] = []
+
     for entry in KNOWLEDGE_BASE:
         if entry.matches(normalized_text, tokens):
-            return entry.response_builder(prompt)
+            response = entry.response_builder(prompt)
+            if response not in matched_responses:
+                matched_responses.append(response)
+
+    if matched_responses:
+        return "\n\n".join(matched_responses)
     return _default_response(prompt)
 
 
@@ -196,7 +256,7 @@ def render_chat_interface() -> None:
                 "role": "assistant",
                 "content": (
                     "Hi there! I'm Kam-GPT. Ask me anything about Kamran Shirazi's background, "
-                    "skills, or availability."
+                    "skills, tech stack, collaboration style, or availability."
                 ),
             }
         ]
