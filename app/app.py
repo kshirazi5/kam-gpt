@@ -7,6 +7,7 @@ import os
 import re
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 from typing import Callable, Iterable, List
 
 from openai import OpenAI
@@ -52,6 +53,9 @@ st.set_page_config(
         "About": "Kam-GPT is an AI guide to Kamran Shirazi's experience.",
     },
 )
+
+
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
 @dataclass
@@ -127,6 +131,20 @@ def _contact_response(_: str) -> str:
     )
 
 
+def _resume_response(_: str) -> str:
+    return (
+        "You can download Kamran's latest resume from the sidebar, which also includes a "
+        "preview of the key highlights."
+    )
+
+
+def _linkedin_response(_: str) -> str:
+    return (
+        "There's a LinkedIn profile export available in the sidebar if you'd like to review "
+        "Kamran's roles and accomplishments in more detail."
+    )
+
+
 def _projects_response(_: str) -> str:
     return (
         "He enjoys building intelligent data products – think ML-powered user onboarding, "
@@ -190,7 +208,7 @@ def _impact_response(_: str) -> str:
 
 KNOWLEDGE_BASE: List[KnowledgeEntry] = [
     KnowledgeEntry(
-        ("experience", "background", "expertise", "profile", "yourself", "resume", "cv"),
+        ("experience", "background", "expertise", "profile", "yourself"),
         _experience_response,
     ),
     KnowledgeEntry(
@@ -207,8 +225,8 @@ KNOWLEDGE_BASE: List[KnowledgeEntry] = [
     ),
     KnowledgeEntry(("machine", "learning"), _focus_response, match_type="all"),
     KnowledgeEntry(("toronto", "canada", "where", "based", "location"), _location_response),
-    KnowledgeEntry(("timeline", "history", "journey", "career", "resume"), _timeline_response),
-    KnowledgeEntry(("contact", "email", "reach", "connect", "linkedin"), _contact_response),
+    KnowledgeEntry(("timeline", "history", "journey", "career"), _timeline_response),
+    KnowledgeEntry(("contact", "email", "reach", "connect"), _contact_response),
     KnowledgeEntry(("project", "projects", "work", "built", "building"), _projects_response),
     KnowledgeEntry(
         (
@@ -229,6 +247,8 @@ KNOWLEDGE_BASE: List[KnowledgeEntry] = [
     KnowledgeEntry(("values", "culture", "principles", "approach"), _values_response),
     KnowledgeEntry(("education", "degree", "school", "university", "study", "learning"), _education_response),
     KnowledgeEntry(("impact", "results", "outcome", "wins", "success", "achievement"), _impact_response),
+    KnowledgeEntry(("resume", "cv"), _resume_response),
+    KnowledgeEntry(("linkedin", "profile"), _linkedin_response),
 ]
 
 
@@ -317,6 +337,49 @@ def generate_response(prompt: str, history: list[dict[str, str]]) -> str:
     return _generate_llm_response(prompt, history)
 
 
+@lru_cache(maxsize=None)
+def _load_document(filename: str) -> str:
+    """Return the raw text for a document located in the data directory."""
+
+    path = DATA_DIR / filename
+    try:
+        return path.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        LOGGER.warning("Document %s could not be found", filename)
+    except OSError:
+        LOGGER.exception("Unable to read document %s", filename)
+    return ""
+
+
+def _strip_front_matter(content: str) -> str:
+    """Remove YAML front matter from markdown documents for preview rendering."""
+
+    if content.startswith("---"):
+        end_marker = content.find("\n---", 3)
+        if end_marker != -1:
+            return content[end_marker + 4 :].lstrip("\n")
+    return content
+
+
+def _render_document_controls(filename: str, label: str, description: str) -> None:
+    """Render download and preview controls for a markdown document."""
+
+    content = _load_document(filename)
+    if not content:
+        st.caption(f"{label} is currently unavailable.")
+        return
+
+    st.markdown(f"**{label}:** {description}")
+    st.download_button(
+        label=f"Download {label.lower()} (Markdown)",
+        data=content,
+        file_name=f"kamran-shirazi-{filename}",
+        mime="text/markdown",
+    )
+    with st.expander(f"Preview {label.lower()}"):
+        st.markdown(_strip_front_matter(content))
+
+
 def render_sidebar() -> None:
     """Render supporting information and controls in the sidebar."""
 
@@ -334,6 +397,18 @@ def render_sidebar() -> None:
         if st.button("Reset conversation"):
             st.session_state.pop("messages", None)
             st.experimental_rerun()
+
+        st.subheader("Documents")
+        _render_document_controls(
+            "resume.md",
+            "Resume",
+            "Download the latest copy or skim the highlights.",
+        )
+        _render_document_controls(
+            "linkedin.md",
+            "LinkedIn export",
+            "Review Kamran's recent roles, education, and skills.",
+        )
 
 
 def render_chat_interface() -> None:
