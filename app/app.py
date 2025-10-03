@@ -10,14 +10,13 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Callable, Iterable, List
 
-from openai import OpenAI
+from openai import OpenAI, AzureOpenAI
 import streamlit as st
 
 
 LOGGER = logging.getLogger(__name__)
 
-LLM_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
-LLM_SYSTEM_PROMPT = """
+LLM_BASE_SYSTEM_PROMPT = """
 You are Kam-GPT, an AI guide to data analyst and applied data science graduate student
 Kamran Shirazi. Use the conversation so far and the portfolio facts below to answer with
 concise, friendly guidance that highlights Kamran's experience, values, and
@@ -40,9 +39,29 @@ Portfolio facts:
 """.strip()
 
 
+DEFAULT_OPENAI_MODEL = "gpt-4.1"
+
+
+def _get_model_name() -> str:
+    """Return the deployment/model name for OpenAI or Azure OpenAI."""
+
+    return os.getenv("AZURE_OPENAI_DEPLOYMENT") or os.getenv(
+        "OPENAI_MODEL", DEFAULT_OPENAI_MODEL
+    )
+
+
 @lru_cache(maxsize=1)
-def _get_openai_client() -> OpenAI | None:
-    """Return an OpenAI client when an API key is present."""
+def _get_openai_client() -> OpenAI | AzureOpenAI | None:
+    """Return an OpenAI-compatible client when credentials are present."""
+
+    azure_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    if azure_api_key and azure_endpoint:
+        return AzureOpenAI(
+            api_key=azure_api_key,
+            azure_endpoint=azure_endpoint,
+            api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-01"),
+        )
 
     if not os.getenv("OPENAI_API_KEY"):
         return None
@@ -312,7 +331,7 @@ def _generate_llm_response(prompt: str, history: list[dict[str, str]]) -> str:
     if client is None:
         return _generate_rule_based_response(prompt)
 
-    messages = [{"role": "system", "content": LLM_SYSTEM_PROMPT}]
+    messages = [{"role": "system", "content": _get_system_prompt()}]
     for message in history:
         role = message.get("role")
         content = message.get("content")
@@ -324,7 +343,7 @@ def _generate_llm_response(prompt: str, history: list[dict[str, str]]) -> str:
 
     try:
         response = client.responses.create(
-            model=LLM_MODEL,
+            model=_get_model_name(),
             input=messages,
             temperature=0.3,
             max_output_tokens=600,
@@ -369,6 +388,40 @@ def _strip_front_matter(content: str) -> str:
         if end_marker != -1:
             return content[end_marker + 4 :].lstrip("\n")
     return content
+
+
+def _truncate_document(content: str, limit: int = 2400) -> str:
+    """Return a trimmed version of ``content`` that respects the token budget."""
+
+    if len(content) <= limit:
+        return content
+
+    trimmed = content[:limit]
+    last_break = trimmed.rfind("\n")
+    if last_break != -1 and last_break > limit - 400:
+        trimmed = trimmed[:last_break]
+    return trimmed.rstrip() + "\n…"
+
+
+@lru_cache(maxsize=1)
+def _get_system_prompt() -> str:
+    """Combine the base system prompt with resume and LinkedIn context."""
+
+    prompt_sections = [LLM_BASE_SYSTEM_PROMPT]
+
+    resume = _strip_front_matter(_load_document("resume.md"))
+    if resume:
+        prompt_sections.append(
+            "Resume excerpts (Markdown):\n" + _truncate_document(resume)
+        )
+
+    linkedin = _strip_front_matter(_load_document("linkedin.md"))
+    if linkedin:
+        prompt_sections.append(
+            "LinkedIn profile excerpts (Markdown):\n" + _truncate_document(linkedin)
+        )
+
+    return "\n\n".join(section.strip() for section in prompt_sections if section.strip())
 
 
 def _render_document_controls(filename: str, label: str, description: str) -> None:
