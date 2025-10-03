@@ -1,0 +1,11 @@
+- q: What’s your current degree program?
+  must_contain:
+    - "University of San Diego"
+    - "Applied Data Science"
+- q: Which BI tools have you used professionally?
+  must_contain:
+    - "Power BI"
+    - "Tableau"
+- q: Where did you optimize Redshift/Snowflake queries?
+  must_contain:
+    - "Lytx"
