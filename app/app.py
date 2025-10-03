@@ -2,11 +2,45 @@
 
 from __future__ import annotations
 
+import logging
+import os
 import re
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Callable, Iterable, List
 
+from openai import OpenAI
 import streamlit as st
+
+
+LOGGER = logging.getLogger(__name__)
+
+LLM_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1")
+LLM_SYSTEM_PROMPT = """
+You are Kam-GPT, an AI guide to software and machine learning engineer Kamran Shirazi.
+Use the conversation so far and the portfolio facts below to answer with concise,
+friendly guidance that highlights Kamran's experience, values, and availability.
+
+Portfolio facts:
+- Kamran has over six years of experience designing scalable data and ML platforms and
+  leading initiatives that productionize ML models for cross-functional teams.
+- His recent focus areas include applied machine learning, MLOps automation, and shipping
+  AI features end-to-end with product engineering partners.
+- Kamran works remotely from Toronto, Canada, and collaborates across time zones.
+- He values transparent collaboration, psychological safety, and data-informed decision
+  making, and he enjoys building intelligent data products that deliver measurable impact.
+- You can reach Kamran at kamran@example.com or connect via LinkedIn for collaboration
+  opportunities.
+""".strip()
+
+
+@lru_cache(maxsize=1)
+def _get_openai_client() -> OpenAI | None:
+    """Return an OpenAI client when an API key is present."""
+
+    if not os.getenv("OPENAI_API_KEY"):
+        return None
+    return OpenAI()
 
 
 st.set_page_config(
@@ -204,7 +238,7 @@ def _normalize_prompt(prompt: str) -> tuple[str, set[str]]:
     return normalized_text, tokens
 
 
-def generate_response(prompt: str) -> str:
+def _generate_rule_based_response(prompt: str) -> str:
     """Return a rule-based response that emulates a friendly chat assistant."""
 
     normalized_text, tokens = _normalize_prompt(prompt)
@@ -219,6 +253,68 @@ def generate_response(prompt: str) -> str:
     if matched_responses:
         return "\n\n".join(matched_responses)
     return _default_response(prompt)
+
+
+def _coalesce_llm_text(response: object) -> str:
+    """Extract the text content from an OpenAI responses payload."""
+
+    text_parts: list[str] = []
+    output = getattr(response, "output", [])
+
+    for item in output:
+        if getattr(item, "type", None) != "message":
+            continue
+        for content in getattr(item, "content", []) or []:
+            if getattr(content, "type", None) == "text":
+                text_value = getattr(getattr(content, "text", None), "value", "")
+                if text_value:
+                    text_parts.append(text_value)
+
+    if not text_parts and hasattr(response, "output_text"):
+        return str(response.output_text)
+    return "\n".join(part.strip() for part in text_parts if part).strip()
+
+
+def _generate_llm_response(prompt: str, history: list[dict[str, str]]) -> str:
+    """Use GPT-4.1 to create a conversational response when configured."""
+
+    client = _get_openai_client()
+    if client is None:
+        return _generate_rule_based_response(prompt)
+
+    messages = [{"role": "system", "content": LLM_SYSTEM_PROMPT}]
+    for message in history:
+        role = message.get("role")
+        content = message.get("content")
+        if role in {"user", "assistant"} and content:
+            messages.append({"role": role, "content": content})
+
+    if not messages or messages[-1].get("role") != "user":
+        messages.append({"role": "user", "content": prompt})
+
+    try:
+        response = client.responses.create(
+            model=LLM_MODEL,
+            input=messages,
+            temperature=0.3,
+            max_output_tokens=600,
+        )
+    except Exception:  # pragma: no cover - network errors fall back gracefully
+        LOGGER.exception("Falling back to rule-based response due to OpenAI failure")
+        return _generate_rule_based_response(prompt)
+
+    llm_text = _coalesce_llm_text(response)
+    if not llm_text:
+        return _generate_rule_based_response(prompt)
+    return llm_text
+
+
+def generate_response(prompt: str, history: list[dict[str, str]]) -> str:
+    """Return the best available response for the current configuration."""
+
+    if _get_openai_client() is None:
+        return _generate_rule_based_response(prompt)
+    return _generate_llm_response(prompt, history)
 
 
 def render_sidebar() -> None:
@@ -270,7 +366,7 @@ def render_chat_interface() -> None:
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        response = generate_response(prompt)
+        response = generate_response(prompt, st.session_state.messages)
         with st.chat_message("assistant"):
             st.markdown(response)
         st.session_state.messages.append({"role": "assistant", "content": response})
